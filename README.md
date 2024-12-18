@@ -21,12 +21,14 @@ git push origin {version}
 | Parameter   | Type data            | Keterangan  | Contoh |
 | ---- |:------:| -----------------------:|------------:|
 | path | string(Required) | Lokasi repository lokal |D:\yudha\repo|
+
 [http://localhost:21855/api/current-version?path={path}]()
 
 ### Mengupdate versi lokal sama dengan remote (Running lokal)
 | Parameter   | Type data            | Keterangan  | Contoh |
 | ---- |:------:| -----------------------:|------------:|
 | path | string (Required) | Lokasi repository lokal |D:\yudha\repo|
+
 [http://localhost:21855/api/fetch-version?path={path}]()
 
 ### Mengubah versi lokal (Running lokal)
@@ -35,10 +37,12 @@ git push origin {version}
 | path | string (Required)  | Lokasi repository lokal |D:\yudha\repo|
 | version | string (Required) | versi yang ingin diganti | v1.0.3 |
 | branch | string (Default = master) | version dari branch mana |master|
+
 [http://localhost:21855/api/fetch-version?path={path}]()
 
 ### Mendapatkan semua versi serta pesan tiap versi (Running lokal)
 | Parameter   | Type data            | Keterangan  | Contoh |
 | ---- |:------:| -----------------------:|------------:|
 | path | string (Required) | Lokasi repository lokal |D:\yudha\repo|
+
 [http://localhost:21855/api/versions?path={path}]()
