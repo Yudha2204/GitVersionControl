@@ -66,6 +66,7 @@ namespace GitVersion.Controllers
             {
                 Command cmd = new Command(path);
 
+                await cmd.ExecuteGitCommand($"fetch --all --tags", true);
                 string cmdOutput = await cmd.ExecuteGitCommand($"checkout {branch}", true);
                  
                 if (version != "development")

@@ -91,7 +91,7 @@ namespace GitVersion
                 string output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
                 string error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
 
-                process.WaitForExit();
+                await process.WaitForExitAsync().ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(error))
                 {
