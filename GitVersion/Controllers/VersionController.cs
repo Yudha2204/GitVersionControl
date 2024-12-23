@@ -32,6 +32,12 @@ namespace GitVersion.Controllers
             try
             {
                 string path = _configuration[$"{moduleName}:basePath"];
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new Exception("No path found, check your setting");
+                }
+
                 Command cmd = new Command(path, "describe");
                 string tagsOutput = await cmd.ExecuteGitCommand();
 
@@ -55,6 +61,11 @@ namespace GitVersion.Controllers
             {
                 string path = _configuration[$"{moduleName}:basePath"];
 
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new Exception("No path found, check your setting");
+                }
+
                 Command cmd = new Command(path, "fetch --all --tags");
                 string tagsOutput = await cmd.ExecuteGitCommand();
 
@@ -72,6 +83,11 @@ namespace GitVersion.Controllers
             try
             {
                 string path = _configuration[$"{param.ModuleName}:basePath"];
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new Exception("No path found, check your setting");
+                }
+
                 Command cmd = new Command(path);
 
                 string cmdOutput = await cmd.ExecuteGitCommand($"checkout {param.Branch}", true);
@@ -103,6 +119,11 @@ namespace GitVersion.Controllers
             try
             {
                 string path = _configuration[$"{moduleName}:basePath"];
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new Exception("No path found, check your setting");
+                }
+
                 Command cmd = new Command(path);
 
                 await cmd.ExecuteGitCommand($"fetch --all --tags", true);
@@ -124,22 +145,25 @@ namespace GitVersion.Controllers
                 {
                     string tag = tags[i];
                     string logCommand = null;
-                    if (i == tags.Length - 1)
-                    {
-                        logCommand = $"log --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\" {tag}";
-                    } else
-                    {
-                        logCommand = $"log {tags[i + 1]}..{tag} --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\";";
-                    }
+                    //if (i == tags.Length - 1)
+                    //{
+                    //    logCommand = $"log --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\"; {tag}";
+                    //}
+                    //else
+                    //{
+                    //    logCommand = $"log {tags[i + 1]}..{tag} --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\";";
+                    //}
+
+                    logCommand = $"tag {tag} -l --format='%(subject)'";
 
                     string logOutput = await cmd.ExecuteGitCommand(logCommand);
 
-                    var commitDetails = Command.FormatGitLogOutputToJsonArray(logOutput);
+                    //var commitDetails = Command.FormatGitLogOutputToJsonArray(logOutput);
                     versions.Add(new
                     {
                         Version = tag,
-                        VersionDate = DateTime.Parse(commitDetails.First().Date, System.Globalization.CultureInfo.InvariantCulture),
-                        Changes = commitDetails
+                        //VersionDate = DateTime.Parse(commitDetails.First().Date, System.Globalization.CultureInfo.InvariantCulture),
+                        Message = logOutput
                     });
                 }
                 return Ok(versions);
