@@ -26,17 +26,35 @@ namespace GitVersion
             _path = path;
         }
 
+        public void SetNewPath(string path)
+        {
+            _path = path;
+        }
+
         public async Task<string> ExecuteGitCommand(string arguments, bool ignoreErrorOutput = false)
         {
             _commandString = arguments;
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseGitExecutor();
+            return await this.BaseExcutor("git");
         }
 
         public async Task<string> ExecuteGitCommand(bool ignoreErrorOutput = false)
         {
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseGitExecutor();
+            return await this.BaseExcutor("git");
+        }
+
+        public async Task<string> ExecuteBashCommand(string arguments, bool ignoreErrorOutput = false)
+        {
+            _commandString = arguments;
+            _ignoreErrorOutput = ignoreErrorOutput;
+            return await this.BaseExcutor();
+        }
+
+        public async Task<string> ExecuteBashCommand(bool ignoreErrorOutput = false)
+        {
+            _ignoreErrorOutput = ignoreErrorOutput;
+            return await this.BaseExcutor();
         }
 
         public static List<Commit> FormatGitLogOutputToJsonArray(string gitLogOutput)
@@ -62,7 +80,7 @@ namespace GitVersion
             return commits;
         }
 
-        private async Task<string> BaseGitExecutor()
+        private async Task<string> BaseExcutor(string fileName = "/bin/bash")
         {
             if (string.IsNullOrEmpty(_path))
                 throw new ArgumentNullException(nameof(_path));
@@ -72,7 +90,7 @@ namespace GitVersion
 
             var cmd = new ProcessStartInfo
             {
-                FileName = "git",
+                FileName = fileName,
                 WorkingDirectory = _path,
                 Arguments = this._commandString,
                 RedirectStandardOutput = true,

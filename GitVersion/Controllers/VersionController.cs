@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Drawing;
+using Microsoft.Extensions.Configuration;
+using GitVersion.Model;
 
 namespace GitVersion.Controllers
 {
@@ -16,17 +18,20 @@ namespace GitVersion.Controllers
     public class VersionController : Controller
     {
         private readonly ILogger<VersionController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public VersionController(ILogger<VersionController> logger)
+        public VersionController(ILogger<VersionController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet("current-version")]
-        public async Task<IActionResult> GetCurrentVersion([FromQuery] string path)
+        public async Task<IActionResult> GetCurrentVersion([FromQuery] string moduleName)
         {
             try
             {
+                string path = _configuration[$"{moduleName}:basePath"];
                 Command cmd = new Command(path, "describe");
                 string tagsOutput = await cmd.ExecuteGitCommand();
 
@@ -44,10 +49,12 @@ namespace GitVersion.Controllers
         }
 
         [HttpGet("fetch-version")]
-        public async Task<IActionResult> FetchVersion([FromQuery] string path)
+        public async Task<IActionResult> FetchVersion([FromQuery] string moduleName)
         {
             try
             {
+                string path = _configuration[$"{moduleName}:basePath"];
+
                 Command cmd = new Command(path, "fetch --all --tags");
                 string tagsOutput = await cmd.ExecuteGitCommand();
 
@@ -59,24 +66,27 @@ namespace GitVersion.Controllers
             }
         }
 
-        [HttpGet("change-version")]
-        public async Task<IActionResult> ChangeVersion([FromQuery] string path, [FromQuery] string version, [FromQuery] string branch = "master")
+        [HttpPost("change-version")]
+        public async Task<IActionResult> ChangeVersion([FromBody] ChangeVersionParam param)
         {
             try
             {
+                string path = _configuration[$"{param.ModuleName}:basePath"];
                 Command cmd = new Command(path);
 
-                await cmd.ExecuteGitCommand($"fetch --all --tags", true);
-                string cmdOutput = await cmd.ExecuteGitCommand($"checkout {branch}", true);
+                string cmdOutput = await cmd.ExecuteGitCommand($"checkout {param.Branch}", true);
                  
-                if (version != "development")
+                if (param.Version != "development")
                 {
-                    string changeVerCmd = $"checkout tags/{version}";
+                    string changeVerCmd = $"checkout tags/{param.Version}";
                     cmdOutput = await cmd.ExecuteGitCommand(changeVerCmd, true);
                 } else
                 {
                     cmdOutput = await cmd.ExecuteGitCommand("pull", true);
                 }
+
+                cmd.SetNewPath($"{path}{_configuration[param.ModuleName + ":deployPath"]}");
+                await cmd.ExecuteBashCommand(_configuration[param.ModuleName + ":deployScript"]);
 
 
                 return Ok(new { Message = cmdOutput });
@@ -88,12 +98,14 @@ namespace GitVersion.Controllers
         }
 
         [HttpGet("versions")]
-        public async Task<IActionResult> GetVersions([FromQuery] string path, [FromQuery] int count = 1)
+        public async Task<IActionResult> GetVersions([FromQuery] string moduleName)
         {
             try
             {
+                string path = _configuration[$"{moduleName}:basePath"];
                 Command cmd = new Command(path);
 
+                await cmd.ExecuteGitCommand($"fetch --all --tags", true);
                 string tagCommand = $"tag --sort=-refname";
                 string tagsOutput = await cmd.ExecuteGitCommand(tagCommand);
 
