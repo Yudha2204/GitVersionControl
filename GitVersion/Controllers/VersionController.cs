@@ -40,13 +40,14 @@ namespace GitVersion.Controllers
 
                 Command cmd = new Command(path, "describe");
                 string tagsOutput = await cmd.ExecuteGitCommand();
+                string hashOutput = await cmd.ExecuteGitCommand("rev-parse HEAD");
 
                 if (string.IsNullOrEmpty(tagsOutput))
                 {
                     return Ok(new { Version = "v1.9.9" });
                 }
 
-                return Ok(new { Version = tagsOutput });
+                return Ok(new { Version = tagsOutput, Hash = hashOutput });
             }
             catch (Exception ex)
             {
