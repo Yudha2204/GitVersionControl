@@ -157,11 +157,13 @@ namespace GitVersion.Controllers
                     logCommand = $"tag {tag} -l --format='%(subject)'";
 
                     string logOutput = await cmd.ExecuteGitCommand(logCommand);
+                    string hash = await cmd.ExecuteGitCommand($"rev-list -1 {tag}");
 
                     //var commitDetails = Command.FormatGitLogOutputToJsonArray(logOutput);
                     versions.Add(new
                     {
                         Version = tag,
+                        Hash = hash,
                         //VersionDate = DateTime.Parse(commitDetails.First().Date, System.Globalization.CultureInfo.InvariantCulture),
                         Message = logOutput
                     });
