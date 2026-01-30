@@ -35,26 +35,26 @@ namespace GitVersion
         {
             _commandString = arguments;
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseExcutor("git");
+            return await this.BaseExecutor("git");
         }
 
         public async Task<string> ExecuteGitCommand(bool ignoreErrorOutput = false)
         {
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseExcutor("git");
+            return await this.BaseExecutor("git");
         }
 
         public async Task<string> ExecuteBashCommand(string arguments, bool ignoreErrorOutput = false)
         {
             _commandString = arguments;
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseExcutor();
+            return await this.BaseExecutor();
         }
 
         public async Task<string> ExecuteBashCommand(bool ignoreErrorOutput = false)
         {
             _ignoreErrorOutput = ignoreErrorOutput;
-            return await this.BaseExcutor();
+            return await this.BaseExecutor();
         }
 
         public static List<Commit> FormatGitLogOutputToJsonArray(string gitLogOutput)
@@ -80,7 +80,7 @@ namespace GitVersion
             return commits;
         }
 
-        private async Task<string> BaseExcutor(string fileName = "/bin/bash")
+        private async Task<string> BaseExecutor(string fileName = "/bin/bash")
         {
             if (string.IsNullOrEmpty(_path))
                 throw new ArgumentNullException(nameof(_path));

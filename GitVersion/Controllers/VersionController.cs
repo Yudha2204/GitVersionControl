@@ -127,7 +127,10 @@ namespace GitVersion.Controllers
 
                 Command cmd = new Command(path);
 
-                await cmd.ExecuteGitCommand($"fetch --all --tags", true);
+                // Get all tags and remove that are deleted in remote
+                await cmd.ExecuteGitCommand($"fetch --all --prune --prune-tags", true);
+
+                // Get all tags sorted by version descending
                 string tagCommand = $"tag --sort=-refname";
                 string tagsOutput = await cmd.ExecuteGitCommand(tagCommand);
 
@@ -146,26 +149,16 @@ namespace GitVersion.Controllers
                 {
                     string tag = tags[i];
                     string logCommand = null;
-                    //if (i == tags.Length - 1)
-                    //{
-                    //    logCommand = $"log --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\"; {tag}";
-                    //}
-                    //else
-                    //{
-                    //    logCommand = $"log {tags[i + 1]}..{tag} --pretty=format:\"{{\\\"Date\\\":\\\"%ci\\\",\\\"Message\\\":\\\"%B\\\"}}\";";
-                    //}
 
                     logCommand = $"tag {tag} -l --format='%(subject)'";
 
                     string logOutput = await cmd.ExecuteGitCommand(logCommand);
                     string hash = await cmd.ExecuteGitCommand($"rev-list -1 {tag}");
 
-                    //var commitDetails = Command.FormatGitLogOutputToJsonArray(logOutput);
                     versions.Add(new
                     {
                         Version = tag,
                         Hash = hash,
-                        //VersionDate = DateTime.Parse(commitDetails.First().Date, System.Globalization.CultureInfo.InvariantCulture),
                         Message = logOutput
                     });
                 }
